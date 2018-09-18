@@ -2,19 +2,34 @@ import { Component} from '@angular/core';
 import { IonicPage, NavController, NavParams, Platform } from 'ionic-angular';
 import { MediaCapture, MediaFile, CaptureError, CaptureImageOptions } from '@ionic-native/media-capture';
 import { File } from '@ionic-native/file';
+import firebase from 'firebase';
+
 /**
  * Generated class for the HomePage page.
  *
  * See https://ionicframework.com/docs/components/#navigation for more info on
  * Ionic pages and navigation.
  */
-declare var firebase;
+
+var config = {
+  apiKey: "AIzaSyCI_w2C6N4AV_t9B73A-elh22xZw7r7Ynk",
+  authDomain: "storage-81619.firebaseapp.com",
+  databaseURL: "https://storage-81619.firebaseio.com",
+  projectId: "storage-81619",
+  storageBucket: "storage-81619.appspot.com",
+  messagingSenderId: "646226602153"
+};
+
+
+
 @IonicPage()
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html',
 })
 export class HomePage {
+
+
   imageURI;
   stringPic;
   stringVideo;
@@ -28,7 +43,9 @@ export class HomePage {
     downloadUrl:''
   }
   firebaseUploads;
+  
   constructor(public navCtrl: NavController, public navParams: NavParams,private mediaCapture: MediaCapture, private platform : Platform, private f : File) {
+    firebase.initializeApp(config);
     this.upload = firebase.database().ref('/upload/');
     this.firebaseUploads = firebase.database().ref('/fireuploads/');
   }
@@ -118,4 +135,94 @@ export class HomePage {
       })
     })
   }
+  b; 
+  imageUrl;
+  count =0;
+  images =[];
+  
+  retriveImages(){
+    
+    firebase.database().ref('/fireuploads/').on("value",(snapshot) =>{
+      snapshot.forEach((snap) =>{
+        this.b = {keyname : snap.key, name :snap.val().downloadUrl};
+
+        this.imageUrl =  this.b.name;
+         this.images.push(this.imageUrl);
+
+         if(this.imageUrl.indexOf('.jpg') >= 0){
+          this.images.push(this.imageUrl);
+         }
+        console.log("......................."+this.imageUrl);
+        
+        return false;
+        
+      })
+    });
+  }
+
+  lolipop = 0; 
+  navigate(obj){
+    if(obj === "u"){
+      this.lolipop = 1;
+    }else if(obj === "v"){
+      this.lolipop = 2;
+    }else if(obj === "b"){
+      this.lolipop = 0;
+    }
+  }
+  chocolate =0;
+  viewUploads(choc){
+    if(choc === "p"){
+      this.chocolate = 1;
+      this.lolipop = -99;
+      this.retriveImages();
+    }else if(choc === "v"){
+      this.chocolate = 3;
+      this.getVideos();
+    }else if(choc === "a"){
+      this.chocolate = 4;
+      this.getAudios();
+      this.lolipop = -99;
+      // this.chocolate = 0;
+    }
+  }
+  
+  imageVideoSrc : string;
+
+  imageEmp;
+  videos = [];
+  videoUrl;
+
+getVideos(){
+  console.log(".......................");
+ firebase.database().ref('/fireuploads/').on("value",(snapshot) =>{
+   snapshot.forEach((snap) =>{
+     this.b = {keyname : snap.key, name :snap.val().downloadUrl};
+     this.videoUrl =  this.b.name;
+     if(this.videoUrl.indexOf('.mp4') >= 0){
+       this.videos.push(this.videoUrl);
+     console.log("......................."+this.videoUrl);
+     }
+     return false;
+   })
+ });
+}
+
+
+audios = [];
+audioUrl;
+
+getAudios(){
+ firebase.database().ref('/fireuploads/').on("value",(snapshot) =>{
+   snapshot.forEach((snap) =>{
+     this.b = {keyname : snap.key, name :snap.val().downloadUrl};
+     this.audioUrl =  this.b.name;
+     if(this.audioUrl.indexOf('.m4a') >= 0){
+       this.audios.push(this.audioUrl);
+     console.log("..............."+this.audioUrl);
+     }
+     return false;
+   })
+ });
+}
 }
